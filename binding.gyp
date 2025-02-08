@@ -5,18 +5,23 @@
             "dependencies": [],
             "sources": [
                 "randomx.cc",
-                "randomx/src/randomx.h",
-                "randomx/src/dataset.cpp",
-                "randomx/src/virtual_machine.cpp",
                 "randomx/src/aes_hash.cpp",
+                "randomx/src/allocator.cpp",
                 "randomx/src/blake2_generator.cpp",
-                "randomx/src/randomx.cpp"
+                "randomx/src/dataset.cpp",
+                "randomx/src/instruction_set.cpp",
+                "randomx/src/randomx.cpp",
+                "randomx/src/reciprocal.cpp",
+                "randomx/src/superscalar.cpp",
+                "randomx/src/virtual_machine.cpp"
             ],
             "include_dirs": [
                 "<!(node -e \"require('nan')\")",
                 "randomx/src"
             ],
-            "defines": [],
+            "libraries": [
+                "<(module_root_dir)/randomx/build/librandomx.a"
+            ],
             "cflags_cc": [
                 "-std=c++17",
                 "-fPIC",
@@ -30,11 +35,6 @@
                 "-Ofast",
                 "-march=native"
             ],
-            "link_settings": {
-                "libraries": [
-                    "-Wl,-rpath,./build/Release/"
-                ]
-            },
             "conditions": [
                 ["OS=='mac'", {
                     "xcode_settings": {
@@ -45,4 +45,3 @@
         }
     ]
 }
-
