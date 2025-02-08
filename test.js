@@ -17,12 +17,22 @@ numWorkers = 1; /* increase for multi-thread testing */
 
 if (cluster.isMaster) {
     var workers = [];
+    var completedWorkers = 0; // Счётчик завершённых рабочих процессов
+
     for (var i = 0; i < numWorkers; i++) {
         var worker = cluster.fork({
             workerType: 'RandomXHasher',
             forkId: i
         });
         workers.push(worker);
+
+        worker.on('exit', function (code, signal) {
+            completedWorkers++;
+            if (completedWorkers === numWorkers) {
+                console.log('Все рабочие процессы завершены');
+                process.exit(); // Завершаем главный процесс
+            }
+        });
     }
 } else {
     rx.init(); // Инициализируем RandomX перед вычислением
@@ -33,4 +43,6 @@ if (cluster.isMaster) {
     console.log(process.pid, 'RandomX Output', reverseHex(output.toString('hex')), '\n');
 
     rx.cleanup(); // Очищаем ресурсы RandomX после завершения
+
+    process.exit(); // Завершаем рабочий процесс
 }
