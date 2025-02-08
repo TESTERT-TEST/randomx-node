@@ -42,12 +42,12 @@ void initialize() {
     }
 }
 
-void randomXInit(const v8::FunctionCallbackInfo<Value>& args) {
+void randomXInit(const v8::FunctionCallbackInfo<v8::Value>& args) {
     initialize();
     args.GetReturnValue().Set(args.This());
 }
 
-void randomXHash(const v8::FunctionCallbackInfo<Value>& args) {
+void randomXHash(const v8::FunctionCallbackInfo<v8::Value>& args) {
     Isolate* isolate = args.GetIsolate();
     HandleScope scope(isolate);
 
@@ -77,12 +77,12 @@ void cleanup() {
     initialized = false;
 }
 
-void cleanupModule(const v8::FunctionCallbackInfo<Value>& args) {
+void cleanupModule(const v8::FunctionCallbackInfo<v8::Value>& args) {
     cleanup();
     args.GetReturnValue().Set(Nan::New("RandomX resources cleaned up").ToLocalChecked());
 }
 
-void Init(Handle<Object> exports) {
+void Init(Local<Object> exports) {
     NODE_SET_METHOD(exports, "init", randomXInit);
     NODE_SET_METHOD(exports, "hash", randomXHash);
     NODE_SET_METHOD(exports, "cleanup", cleanupModule);
