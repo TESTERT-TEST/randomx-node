@@ -11,7 +11,7 @@
                 "randomx/src/dataset.cpp",
                 "randomx/src/instruction.cpp",
                 "randomx/src/randomx.cpp",
-                "randomx/src/reciprocal.cpp",
+                "randomx/src/reciprocal.c",
                 "randomx/src/superscalar.cpp",
                 "randomx/src/virtual_machine.cpp"
             ],
