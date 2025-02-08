@@ -4,7 +4,7 @@
 #include <v8.h>
 #include <stdint.h>
 #include <vector>
-#include "randomx/randomx.h"
+#include "randomx/src/randomx.h"
 
 using namespace v8;
 

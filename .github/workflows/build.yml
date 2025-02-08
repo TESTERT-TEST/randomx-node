@@ -21,6 +21,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential cmake python3
 
+      - name: Check RandomX files
+        run: |
+          ls -la randomx/src
+          ls -la randomx/build || echo "Build folder not found"
+
       - name: Build RandomX
         run: |
           cd randomx

@@ -17,7 +17,7 @@
             ],
             "include_dirs": [
                 "<!(node -e \"require('nan')\")",
-                "randomx/src"
+                "<(module_root_dir)/randomx/src"
             ],
             "libraries": [
                 "<(module_root_dir)/randomx/build/librandomx.a"
