@@ -9,7 +9,7 @@
                 "randomx/src/allocator.cpp",
                 "randomx/src/blake2_generator.cpp",
                 "randomx/src/dataset.cpp",
-                "randomx/src/instruction_set.cpp",
+                "randomx/src/instruction.cpp",
                 "randomx/src/randomx.cpp",
                 "randomx/src/reciprocal.cpp",
                 "randomx/src/superscalar.cpp",
