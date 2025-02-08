@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake python3
+          sudo apt-get install -y build-essential cmake python3 libmicrohttpd-dev
 
       - name: Check RandomX files
         run: |
@@ -39,9 +39,10 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install node-gyp and dependencies
+      - name: Install node-gyp, bindings, and dependencies
         run: |
           npm install -g node-gyp
+          npm install bindings
           npm install
 
       - name: Build module
@@ -49,6 +50,7 @@ jobs:
           CXXFLAGS: "-I$(pwd)/randomx/src"
           LDFLAGS: "-L$(pwd)/randomx/build"
         run: |
+          set -e
           node-gyp rebuild
 
       - name: Run tests
