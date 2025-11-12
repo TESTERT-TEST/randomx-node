@@ -53,7 +53,7 @@ jobs:
 
     - name: Create binding.gyp for Node.js 10
       run: |
-        cat > binding.gyp << 'EOF'
+        cat > binding.gyp <<'EOF'
 {
   "targets": [
     {
@@ -97,8 +97,7 @@ jobs:
       "conditions": [
         ["OS=='linux'", {
           "cflags_cc+": ["-Wno-narrowing"]
-        }]
-      ]
+        }]]
     }
   ]
 }
@@ -115,28 +114,28 @@ EOF
 
     - name: Create test file
       run: |
-        cat > test.js << 'EOF'
-        try {
-          var randomxhash = require('./build/Release/randomxhash.node');
-          console.log('✓ Native module loaded successfully in Node.js 10');
-          console.log('✓ Available functions:', Object.keys(randomxhash));
-          if (typeof randomxhash.randomXHash === 'function') {
-            console.log('✓ randomXHash function is available');
-            try {
-              var testInput = Buffer.from('test input');
-              var result = randomxhash.randomXHash(testInput);
-              console.log('✓ Hash function executed successfully');
-              console.log('✓ Result type:', typeof result);
-              console.log('✓ Result length:', result.length);
-            } catch (error) {
-              console.log('⚠ Hash test failed:', error.message);
-            }
-          }
-          console.log('✓ All tests completed successfully');
-        } catch (error) {
-          console.error('✗ Error:', error.message);
-          process.exit(1);
-        }
+        cat > test.js <<'EOF'
+try {
+  var randomxhash = require('./build/Release/randomxhash.node');
+  console.log('✓ Native module loaded successfully in Node.js 10');
+  console.log('✓ Available functions:', Object.keys(randomxhash));
+  if (typeof randomxhash.randomXHash === 'function') {
+    console.log('✓ randomXHash function is available');
+    try {
+      var testInput = Buffer.from('test input');
+      var result = randomxhash.randomXHash(testInput);
+      console.log('✓ Hash function executed successfully');
+      console.log('✓ Result type:', typeof result);
+      console.log('✓ Result length:', result.length);
+    } catch (error) {
+      console.log('⚠ Hash test failed:', error.message);
+    }
+  }
+  console.log('✓ All tests completed successfully');
+} catch (error) {
+  console.error('✗ Error:', error.message);
+  process.exit(1);
+}
 EOF
 
     - name: Run tests
