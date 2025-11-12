@@ -34,7 +34,6 @@ jobs:
 
     - name: Install compatible build tools
       run: |
-        # Устанавливаем совместимые версии инструментов
         npm install -g node-gyp@5.1.0
         npm install nan@2.14.2 bindings@1.5.0
 
@@ -109,11 +108,8 @@ EOF
       run: |
         export CXXFLAGS="-I$(pwd)/randomx/src -I$(pwd)/randomx/src/blake2"
         export LDFLAGS="-L$(pwd)/randomx/build"
-        
-        echo "Building with node-gyp for Node.js 10..."
         node-gyp configure
         node-gyp build
-        
         ls -la build/Release/
         file build/Release/randomxhash.node
 
@@ -122,13 +118,10 @@ EOF
         cat > test.js << 'EOF'
         try {
           var randomxhash = require('./build/Release/randomxhash.node');
-          
           console.log('✓ Native module loaded successfully in Node.js 10');
           console.log('✓ Available functions:', Object.keys(randomxhash));
-          
           if (typeof randomxhash.randomXHash === 'function') {
             console.log('✓ randomXHash function is available');
-            
             try {
               var testInput = Buffer.from('test input');
               var result = randomxhash.randomXHash(testInput);
@@ -139,7 +132,6 @@ EOF
               console.log('⚠ Hash test failed:', error.message);
             }
           }
-          
           console.log('✓ All tests completed successfully');
         } catch (error) {
           console.error('✗ Error:', error.message);
