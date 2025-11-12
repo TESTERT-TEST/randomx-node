@@ -137,7 +137,7 @@ EOF
           console.error('✗ Error:', error.message);
           process.exit(1);
         }
-        EOF
+EOF
 
     - name: Run tests
       run: node test.js
