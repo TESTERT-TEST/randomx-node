@@ -2,6 +2,7 @@
     "targets": [
         {
             "target_name": "randomxhash",
+            "dependencies": [],
             "sources": [
                 "randomx.cc",
                 "randomx/src/aes_hash.cpp",
@@ -16,53 +17,29 @@
             ],
             "include_dirs": [
                 "<!(node -e \"require('nan')\")",
-                "randomx/src",
-                "randomx/src/blake2"
+                "<(module_root_dir)/randomx/src"
             ],
-            "defines": [
-                "RANDOMX_STATIC",
-                "RANDOMX_INTERNAL_AES=0"
+            "libraries": [
+                "<(module_root_dir)/randomx/build/librandomx.a"
             ],
             "cflags_cc": [
-                "-std=c++11",
+                "-std=c++17",
                 "-fPIC",
-                "-O2",
-                "-Wall",
-                "-Wextra"
+                "-fexceptions",
+                "-Ofast",
+                "-march=native"
             ],
-            "cflags_c": [
-                "-std=c99",
+            "cflags": [
                 "-fPIC",
-                "-O2"
-            ],
-            "ldflags": [
-                "-lpthread"
+                "-fexceptions",
+                "-Ofast",
+                "-march=native"
             ],
             "conditions": [
-                ["OS=='linux'", {
-                    "cflags_cc+": [
-                        "-march=x86-64"
-                    ],
-                    "ldflags+": [
-                        "-Wl,-rpath,'$$ORIGIN'"
-                    ]
-                }],
                 ["OS=='mac'", {
                     "xcode_settings": {
-                        "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
-                        "CLANG_CXX_LANGUAGE_STANDARD": "c++11",
-                        "CLANG_CXX_LIBRARY": "libc++",
-                        "MACOSX_DEPLOYMENT_TARGET": "10.13"
-                    },
-                    "cflags_cc+": [
-                        "-mmacosx-version-min=10.13"
-                    ]
-                }],
-                ["OS=='win'", {
-                    "defines+": [
-                        "NOMINMAX",
-                        "WIN32_LEAN_AND_MEAN"
-                    ]
+                        "GCC_ENABLE_CPP_EXCEPTIONS": "YES"
+                    }
                 }]
             ]
         }
