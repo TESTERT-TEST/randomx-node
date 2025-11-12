@@ -2,7 +2,6 @@
     "targets": [
         {
             "target_name": "randomxhash",
-            "dependencies": [],
             "sources": [
                 "randomx.cc",
                 "randomx/src/aes_hash.cpp",
@@ -17,29 +16,53 @@
             ],
             "include_dirs": [
                 "<!(node -e \"require('nan')\")",
-                "<(module_root_dir)/randomx/src"
+                "randomx/src",
+                "randomx/src/blake2"
             ],
-            "libraries": [
-                "<(module_root_dir)/randomx/build/librandomx.a"
+            "defines": [
+                "RANDOMX_STATIC",
+                "RANDOMX_INTERNAL_AES=0"
             ],
             "cflags_cc": [
-                "-std=c++17",
+                "-std=c++11",
                 "-fPIC",
-                "-fexceptions",
-                "-Ofast",
-                "-march=native"
+                "-O2",
+                "-Wall",
+                "-Wextra"
             ],
-            "cflags": [
+            "cflags_c": [
+                "-std=c99",
                 "-fPIC",
-                "-fexceptions",
-                "-Ofast",
-                "-march=native"
+                "-O2"
+            ],
+            "ldflags": [
+                "-lpthread"
             ],
             "conditions": [
+                ["OS=='linux'", {
+                    "cflags_cc+": [
+                        "-march=x86-64"
+                    ],
+                    "ldflags+": [
+                        "-Wl,-rpath,'$$ORIGIN'"
+                    ]
+                }],
                 ["OS=='mac'", {
                     "xcode_settings": {
-                        "GCC_ENABLE_CPP_EXCEPTIONS": "YES"
-                    }
+                        "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
+                        "CLANG_CXX_LANGUAGE_STANDARD": "c++11",
+                        "CLANG_CXX_LIBRARY": "libc++",
+                        "MACOSX_DEPLOYMENT_TARGET": "10.13"
+                    },
+                    "cflags_cc+": [
+                        "-mmacosx-version-min=10.13"
+                    ]
+                }],
+                ["OS=='win'", {
+                    "defines+": [
+                        "NOMINMAX",
+                        "WIN32_LEAN_AND_MEAN"
+                    ]
                 }]
             ]
         }
