@@ -34,14 +34,6 @@ jobs:
           make -j$(nproc)
           cd ../..
 
-      - name: Build module
-        env:
-          CXXFLAGS: "-I$(pwd)/randomx/src"
-          LDFLAGS: "-L$(pwd)/randomx/build"
-        run: |
-          set -e
-          node-gyp rebuild
-
       - name: Verify build artifacts
         run: |
           echo "=== Build artifacts ==="
