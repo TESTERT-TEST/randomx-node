@@ -53,6 +53,33 @@ jobs:
           set -e
           node-gyp rebuild
 
+      - name: Verify build artifacts
+        run: |
+          echo "=== Build artifacts ==="
+          ls -la build/Release/
+          file build/Release/randomxhash.node || echo "Module not found"
+          echo "=== RandomX artifacts ==="
+          ls -la randomx/build/
+          file randomx/build/librandomx.a || echo "Library not found"
+
       - name: Run tests
         run: |
           node test.js
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: randomx-build-artifacts
+          path: |
+            build/
+            randomx/build/
+          retention-days: 7
+
+      - name: Upload compiled module only
+        uses: actions/upload-artifact@v4
+        with:
+          name: randomxhash-module
+          path: |
+            build/Release/randomxhash.node
+            randomx/build/librandomx.a
+          retention-days: 30
