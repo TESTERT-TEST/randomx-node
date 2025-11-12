@@ -53,7 +53,7 @@ void randomXHash(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
     if (args.Length() < 1 || !node::Buffer::HasInstance(args[0])) {
         isolate->ThrowException(Exception::TypeError(
-            String::NewFromUtf8(isolate, "Expected a buffer as input").ToLocalChecked()
+            String::NewFromUtf8(isolate, "Expected a buffer as input")  // Убрано .ToLocalChecked()
         ));
         return;
     }
@@ -67,7 +67,10 @@ void randomXHash(const v8::FunctionCallbackInfo<v8::Value>& args) {
     }
 
     randomx_calculate_hash(rxVM, input, length, result);
-    args.GetReturnValue().Set(Nan::CopyBuffer(result, 32).ToLocalChecked());
+    
+    // Исправляем для Node.js 10
+    Local<Object> buffer = Nan::CopyBuffer(result, 32).ToLocalChecked();
+    args.GetReturnValue().Set(buffer);
 }
 
 void cleanup() {
@@ -79,6 +82,7 @@ void cleanup() {
 
 void cleanupModule(const v8::FunctionCallbackInfo<v8::Value>& args) {
     cleanup();
+    // Исправляем для Node.js 10
     args.GetReturnValue().Set(Nan::New("RandomX resources cleaned up").ToLocalChecked());
 }
 
