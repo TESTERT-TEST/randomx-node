@@ -24,8 +24,14 @@ jobs:
           cmake \
           python2.7 \
           pkg-config \
-          gcc-8 \
-          g++-8
+          gcc-9 \
+          g++-9
+
+    - name: Set compatible compiler
+      run: |
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 900
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 900
+
 
     - name: Setup Node.js 10
       uses: actions/setup-node@v4
