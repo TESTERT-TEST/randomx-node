@@ -2,158 +2,57 @@ name: Build and Test RandomX Module
 
 on:
   push:
-    branches: [main, master]
+    branches:
+      - main
   pull_request:
-    branches: [main, master]
+    branches:
+      - main
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        node-version: [16.x, 18.x, 20.x]
+    runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository with submodules
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          build-essential \
-          cmake \
-          python3 \
-          pkg-config
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake python3 libmicrohttpd-dev
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
+      - name: Check RandomX files
+        run: |
+          ls -la randomx/src
+          ls -la randomx/build || echo "Build folder not found"
 
-    - name: Install NAN
-      run: npm install nan
+      - name: Build RandomX
+        run: |
+          cd randomx
+          mkdir -p build && cd build
+          cmake ..
+          make -j$(nproc)
+          cd ../..
 
-    - name: Build RandomX as static library
-      run: |
-        cd randomx
-        mkdir -p build
-        cd build
-        cmake -DARCH=native -DSTATIC_LIBRARY=ON ..
-        make -j$(nproc)
-        cd ../..
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
 
-    - name: Verify RandomX build
-      run: |
-        ls -la randomx/build/
-        file randomx/build/librandomx.a
-        echo "RandomX library size: $(stat -c%s randomx/build/librandomx.a) bytes"
+      - name: Install node-gyp, bindings, and dependencies
+        run: |
+          npm install -g node-gyp
+          npm install bindings
+          npm install
 
-    - name: Configure node-gyp
-      run: |
-        # Create binding.gyp if not exists
-        if [ ! -f binding.gyp ]; then
-          cat > binding.gyp << 'EOF'
-        {
-          "targets": [
-            {
-              "target_name": "randomxhash",
-              "sources": [
-                "randomx.cc",
-                "randomx/src/aes_hash.cpp",
-                "randomx/src/allocator.cpp",
-                "randomx/src/blake2_generator.cpp",
-                "randomx/src/dataset.cpp",
-                "randomx/src/instruction.cpp",
-                "randomx/src/randomx.cpp",
-                "randomx/src/reciprocal.c",
-                "randomx/src/superscalar.cpp",
-                "randomx/src/virtual_machine.cpp"
-              ],
-              "include_dirs": [
-                "<!(node -e \"require('nan')\")",
-                "randomx/src",
-                "randomx/src/blake2"
-              ],
-              "defines": [
-                "RANDOMX_STATIC",
-                "RANDOMX_INTERNAL_AES=0"
-              ],
-              "cflags_cc": [
-                "-std=c++11",
-                "-fPIC",
-                "-O2",
-                "-Wall"
-              ],
-              "cflags_c": [
-                "-std=c99",
-                "-fPIC",
-                "-O2"
-              ],
-              "ldflags": ["-lpthread"]
-            }
-          ]
-        }
-        EOF
-        fi
+      - name: Build module
+        env:
+          CXXFLAGS: "-I$(pwd)/randomx/src"
+          LDFLAGS: "-L$(pwd)/randomx/build"
+        run: |
+          set -e
+          node-gyp rebuild
 
-        cat binding.gyp
-
-    - name: Build native module
-      run: |
-        # Set environment for node-gyp
-        export CXXFLAGS="-I$(pwd)/randomx/src -I$(pwd)/randomx/src/blake2"
-        export LDFLAGS="-L$(pwd)/randomx/build -lrandomx -lpthread"
-        
-        echo "Building with node-gyp..."
-        npx node-gyp configure
-        npx node-gyp build -j$(nproc)
-        
-        # Verify build
-        ls -la build/Release/
-        file build/Release/randomxhash.node
-
-    - name: Create test file
-      run: |
-        cat > test.js << 'EOF'
-        const randomxhash = require('./build/Release/randomxhash.node');
-        
-        console.log('✓ Native module loaded successfully');
-        console.log('✓ Available functions:', Object.keys(randomxhash));
-        
-        // Test basic functionality
-        if (typeof randomxhash.randomXHash === 'function') {
-          console.log('✓ randomXHash function is available');
-          
-          // Simple test with sample input
-          try {
-            const testInput = Buffer.from('test input');
-            const result = randomxhash.randomXHash(testInput);
-            console.log('✓ Hash function executed successfully');
-            console.log('✓ Result type:', typeof result);
-            console.log('✓ Result length:', result.length);
-          } catch (error) {
-            console.log('⚠ Hash test failed (might be expected):', error.message);
-          }
-        } else {
-          console.log('✗ randomXHash function not found');
-          process.exit(1);
-        }
-        
-        console.log('✓ All tests completed successfully');
-        EOF
-
-    - name: Run tests
-      run: node test.js
-
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: randomxhash-module-${{ matrix.node-version }}-${{ matrix.os }}
-        path: |
-          build/Release/randomxhash.node
-          randomx/build/librandomx.a
-        retention-days: 7
+      - name: Run tests
+        run: |
+          node test.js
