@@ -23,7 +23,7 @@
                 "<(module_root_dir)/randomx/build/librandomx.a"
             ],
             "cflags_cc": [
-                "-std=c++17",
+                "-std=c++11",
                 "-fPIC",
                 "-fexceptions",
                 "-Ofast",
