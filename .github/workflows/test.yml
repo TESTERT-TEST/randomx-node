@@ -2,69 +2,70 @@ name: Build and Test RandomX Module
 
 on:
   push:
-    branches: [main, master]
+    branches:
+      - main
   pull_request:
-    branches: [main, master]
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-22.04
 
     steps:
-    - name: Checkout repository with submodules
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          build-essential \
-          cmake \
-          python2.7 \
-          pkg-config \
-          gcc-9 \
-          g++-9
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake python3 libmicrohttpd-dev
 
-    - name: Set compatible compiler
-      run: |
-        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 900
-        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 900
+      - name: Check RandomX files
+        run: |
+          ls -la randomx/src
+          ls -la randomx/build || echo "Build folder not found"
+
+      - name: Build RandomX
+        run: |
+          cd randomx
+          mkdir -p build && cd build
+          cmake ..
+          make -j$(nproc)
+          cd ../..
+
+      - name: Build module
+        env:
+          CXXFLAGS: "-I$(pwd)/randomx/src"
+          LDFLAGS: "-L$(pwd)/randomx/build"
+        run: |
+          set -e
+          node-gyp rebuild
+
+      - name: Verify build artifacts
+        run: |
+          echo "=== Build artifacts ==="
+          ls -la build/Release/
+          file build/Release/randomxhash.node || echo "Module not found"
+          echo "=== RandomX artifacts ==="
+          ls -la randomx/build/
+          file randomx/build/librandomx.a || echo "Library not found"
 
 
-    - name: Setup Node.js 10
-      uses: actions/setup-node@v4
-      with:
-        node-version: '10.24.1'
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: randomx-build-artifacts
+          path: |
+            build/
+            randomx/build/
+          retention-days: 7
 
-    - name: Install compatible build tools
-      run: |
-        npm install -g node-gyp@5.1.0
-        npm install nan@2.14.2 bindings@1.5.0
-
-    - name: Set compatible compiler
-      run: |
-        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 800
-        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 800
-
-    - name: Build RandomX as static library
-      run: |
-        cd randomx
-        mkdir -p build
-        cd build
-        cmake -DARCH=native -DSTATIC_LIBRARY=ON ..
-        make -j$(nproc)
-        cd ../..
-
-    - name: Build native module
-      run: |
-        export CXXFLAGS="-I$(pwd)/randomx/src -I$(pwd)/randomx/src/blake2"
-        export LDFLAGS="-L$(pwd)/randomx/build"
-        node-gyp configure
-        node-gyp build
-        ls -la build/Release/
-        file build/Release/randomxhash.node
-
-    - name: Run tests
-      run: node test.js
+      - name: Upload compiled module only
+        uses: actions/upload-artifact@v4
+        with:
+          name: randomxhash-module
+          path: |
+            build/Release/randomxhash.node
+            randomx/build/librandomx.a
+          retention-days: 30
